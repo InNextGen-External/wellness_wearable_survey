@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แบบสอบถามสุขภาพและอุปกรณ์สวมใส่</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one narrow column, one section per screen, progress bar on top. Tokens use the InNextGen palette. */
+:root{
+  --bg:#F4F5FA; --surface:#FFFFFF; --fg:#1B2048; --muted:#5A6090; --line:#D9DCEB;
+  --brand:#232A5E; --brand-fg:#FFFFFF; --pick-bg:#FBE8EB; --pick-line:#C6333B;
+  --err:#B3262E; --ok:#1F7A4D; --bar:#E3E5F1; --bar-fill:#C6333B;
+  --display:"Oswald","IBM Plex Sans Thai",sans-serif;
+  --body:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10122A; --surface:#1A1E40; --fg:#ECEDF8; --muted:#A5AAD2; --line:#333864;
+    --brand:#F3AEB8; --brand-fg:#1B2048; --pick-bg:#3A2447; --pick-line:#F3AEB8;
+    --err:#FF8E96; --ok:#7FD6A5; --bar:#2A2E58; --bar-fill:#F3AEB8; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10122A; --surface:#1A1E40; --fg:#ECEDF8; --muted:#A5AAD2; --line:#333864;
+  --brand:#F3AEB8; --brand-fg:#1B2048; --pick-bg:#3A2447; --pick-line:#F3AEB8;
+  --err:#FF8E96; --ok:#7FD6A5; --bar:#2A2E58; --bar-fill:#F3AEB8; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);margin:0;
+  padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font:600 26px/1.3 var(--body);margin:0;text-wrap:balance}
+.intro{color:var(--muted);margin:0;font-size:15px}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog .lbl{font:500 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bar{height:6px;background:var(--bar);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--bar-fill);width:0;transition:width .25s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:26px}
+.card>h2{font:600 19px/1.4 var(--body);margin:0;text-wrap:balance}
+.note{margin:0;color:var(--muted);font-size:14px}
+.q{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ql{display:flex;gap:10px;align-items:baseline;font-weight:500}
+.ql .no{font:600 14px var(--display);color:var(--muted);min-width:2.4em;flex:none;letter-spacing:.04em}
+.ql .opt{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto;flex:none}
+.why{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.why b{color:var(--fg);font-weight:600}
+header{display:flex;flex-direction:column;gap:10px}
+.why p{margin:0}
+.help{margin:0;color:var(--muted);font-size:14px;padding-left:calc(2.4em + 10px)}
+.opts{display:flex;flex-direction:column;gap:8px;padding-left:calc(2.4em + 10px)}
+.o{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;min-width:0}
+.o:has(input:checked){background:var(--pick-bg);border-color:var(--pick-line)}
+.o input{margin-top:6px;accent-color:var(--brand);flex:none}
+.o span{min-width:0;overflow-wrap:anywhere}
+.o .oth{flex:1;min-width:0;font:inherit;color:var(--fg);background:transparent;border:0;border-bottom:1px solid var(--line);padding:2px 0;margin-left:6px}
+.f{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+textarea.f{min-height:104px;resize:vertical}
+.fld{padding-left:calc(2.4em + 10px)}
+.rows{display:flex;flex-direction:column;gap:10px;padding-left:calc(2.4em + 10px)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center}
+.row label{font-size:15px;overflow-wrap:anywhere}
+.money{position:relative}
+.money .f{padding-right:44px;text-align:right;font-variant-numeric:tabular-nums}
+.money b{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:400;font-size:13px;color:var(--muted);pointer-events:none}
+.err{color:var(--err);font-size:14px;padding-left:calc(2.4em + 10px);margin:0}
+.q.bad .o,.q.bad .f{border-color:var(--err)}
+.nav{display:flex;justify-content:space-between;gap:12px}
+.btn{font:500 16px var(--body);border-radius:8px;padding:11px 22px;border:1px solid var(--brand);cursor:pointer}
+.btn.pri{background:var(--brand);color:var(--brand-fg)}
+.btn.sec{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn[disabled]{opacity:.5;cursor:default}
+:is(.btn,.o input,.f,.o .oth):focus-visible{outline:3px solid var(--bar-fill);outline-offset:2px}
+.done{display:flex;flex-direction:column;gap:14px}
+.done h2{margin:0;font:600 22px var(--body)}
+.mono{font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:200px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.ok{color:var(--ok)}
+@media (max-width:480px){
+  .card{padding:16px}
+  .help,.opts,.fld,.rows,.err{padding-left:0}
+  .ql{flex-direction:column;gap:2px}
+  .ql .opt{margin-left:0}
+  .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header>
+    <h1>แบบสอบถามสุขภาพและอุปกรณ์สวมใส่</h1>
+    <p class="intro">ใช้เวลาประมาณ 5-7 นาที เกี่ยวกับพฤติกรรมดูแลสุขภาพและการใช้อุปกรณ์สวมใส่ ไม่มีคำตอบถูกหรือผิด ตอบตามที่เป็นจริงของคุณ ข้อมูลใช้เพื่อการศึกษาความต้องการเท่านั้น ไม่เปิดเผยรายบุคคล ข้อมูลติดต่อ (ถ้าให้) ใช้ติดต่อกลับเรื่องเดียวที่คุณระบุไว้</p>
+    <div class="why" style="margin-top:16px">
+      <b>ทำไมถึงถามหลายเรื่อง</b>
+      <p>เรากำลังศึกษาว่าคนที่ใช้ชีวิตต่างกัน ดูแลสุขภาพและความปลอดภัยของตัวเองและคนใกล้ตัวอย่างไร และอุปกรณ์สวมใส่แบบไหนเข้ากับชีวิตจริงของแต่ละคน เราจึงถามหลายเรื่อง เช่น การออกกำลังกาย การใส่นาฬิกา การดูแลผู้สูงอายุ และความเสี่ยงในที่ทำงาน เพราะยังไม่รู้ว่าเรื่องไหนสำคัญกับใครมากที่สุด</p>
+      <p>ไม่จำเป็นต้องเกี่ยวกับคุณทุกเรื่อง ถ้าเรื่องไหนไม่ใช่ตัวคุณ ให้เลือก "ไม่" แล้วระบบจะข้ามให้ ข้อที่เขียนว่า "ไม่บังคับ" ข้ามได้เลย และคำตอบว่า "ไม่มี" หรือ "ไม่เคย" มีค่าต่อเราเท่ากับคำตอบอื่น</p>
+    </div>
+  </header>
+  <div id="prog" class="prog"><div class="lbl" id="plbl"></div><div class="bar"><i id="pfill"></i></div></div>
+  <main id="main"></main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var OTHER='__other__', FORM_VERSION='fieldkit-v5';
+/* วาง URL ของ Apps Script (ลงท้ายด้วย /exec) ระหว่างเครื่องหมายคำพูด ถ้าเว้นว่างไว้ ฟอร์มจะเก็บลงฐานข้อมูลของ claude.ai แทน */
+var ENDPOINT='https://script.google.com/macros/s/AKfycbwKZl2x0VbzbpSp9II-3wNpRnsMgmWE1QQ08EiU5p8mUGYPJ3M-asgkQMC0g4tZVfhp/exec';
+var SRC=''; try{SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,40);}catch(e){}
+var answers={}, pending=new Set(), pageIdx=0, quiz={}, dbNs=null;
+
+function h(tag,attrs){
+  var e=document.createElement(tag);
+  for(var k in (attrs||{})){var v=attrs[k];
+    if(k==='class')e.className=v;
+    else if(k.indexOf('on')===0)e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,'');
+    else if(v!==false&&v!=null)e.setAttribute(k,v);}
+  for(var i=2;i<arguments.length;i++){var kids=[].concat(arguments[i]);
+    for(var j=0;j<kids.length;j++){var c=kids[j]; if(c==null||c===false)continue;
+      e.append(c.nodeType?c:document.createTextNode(c));}}
+  return e;
+}
+
+/* ---------- แบบสอบถาม ---------- */
+var MONEY5=[['wear','อุปกรณ์สวมใส่ (นาฬิกา สายรัด แหวนสุขภาพ)'],['sub','แอปหรืออุปกรณ์สุขภาพที่ต้องจ่ายรายเดือนหรือรายปี'],['gym','ฟิตเนส คลาสออกกำลังกาย เทรนเนอร์'],['physio','กายภาพบำบัด นวดบำบัด คลินิกกีฬา'],['check','ตรวจสุขภาพที่จ่ายเอง'],['gear','รองเท้าและอุปกรณ์กีฬา'],['race','ค่าสมัครงานวิ่งหรือแข่งขัน'],['supp','อาหารเสริม']];
+var MONEY13=[['cctv','กล้องวงจรปิด'],['carer','ผู้ดูแลหรือพยาบาล'],['alert','ปุ่มฉุกเฉินหรืออุปกรณ์แจ้งเตือนการล้ม'],['home','ราวจับ พื้นกันลื่น ปรับปรุงบ้าน'],['phone','สมาร์ทวอทช์หรือโทรศัพท์ให้ท่านใช้'],['other','อื่น ๆ']];
+
+var Q=[
+ {id:'q1',no:'1',type:'radio',req:1,label:'ใน 4 สัปดาห์ที่ผ่านมา คุณออกกำลังกายบ่อยแค่ไหน',opts:['ไม่ได้ออกกำลังกายเลย','1-3 ครั้ง','4-8 ครั้ง','9-16 ครั้ง','มากกว่า 16 ครั้ง']},
+ {id:'q2',no:'2',type:'check',req:1,label:'ปัจจุบันคุณใส่อะไรที่ข้อมือบ้าง (เลือกได้หลายข้อ)',opts:['ไม่ใส่อะไรเลย','นาฬิกาทั่วไป','Apple Watch','Garmin','Samsung Galaxy Watch','Huawei / Amazfit / Xiaomi','Whoop / Oura หรือแหวนและสายรัดเพื่อสุขภาพ','กำไลหรือเครื่องประดับ'],other:'อื่น ๆ (ระบุ)'},
+ {id:'q3',no:'3',type:'radio',req:1,label:'มีนาฬิกาที่คุณชอบ แต่ไม่ได้ใส่เพราะต้องใส่อุปกรณ์อื่นแทนหรือไม่',opts:['ไม่มี'],other:'มี (ระบุยี่ห้อหรือรุ่นสั้น ๆ)',otherPrefix:'มี: '},
+ {id:'q4',no:'4',type:'money',req:1,label:'อุปกรณ์อิเล็กทรอนิกส์ที่ใส่ติดตัว (สมาร์ทวอทช์ สายรัด แหวน ฯลฯ) ที่แพงที่สุดที่คุณเคยซื้อ ราคากี่บาท',help:'ใส่ 0 ถ้าไม่เคยซื้อ'},
+ {id:'q5',no:'5',type:'group',req:1,label:'ภายใน 1 ปีที่ผ่านมา คุณจ่ายเงินให้เรื่องต่อไปนี้รวมกี่บาท',rows:MONEY5,help:'ใส่ 0 ถ้าไม่มี'},
+ {id:'q6',no:'6',type:'radio',req:1,label:'คุณคิดอย่างไรกับอุปกรณ์สุขภาพที่ต้องจ่ายค่าสมาชิกรายเดือนหรือรายปี',opts:['ไม่เคยจ่ายและจะไม่จ่าย','เคยอยากได้อุปกรณ์ แต่ไม่ซื้อเพราะต้องจ่ายค่าสมาชิก','เคยจ่ายแล้วเลิก','ตอนนี้ยังจ่ายอยู่']},
+ {id:'q6_1',no:'6.1',type:'long',label:'ถ้าเคยจ่ายแล้วเลิก หรือยังจ่ายอยู่ เป็นบริการอะไร และเหตุผลที่เลิกหรือที่ยังจ่าย'},
+ {id:'q7',no:'7',type:'radio',req:1,label:'เวลาอยู่ในที่ประชุมหรือโต๊ะทำงาน คุณจัดการกับการแจ้งเตือนที่ข้อมือยังไง',opts:['ไม่มีอุปกรณ์ที่ข้อมือ','ปล่อยไว้ตามปกติ','ตั้งห้ามรบกวนหรือปิดเสียง','พลิกข้อมือหรือถอดออก','ปิดการแจ้งเตือนส่วนใหญ่ถาวร']},
+ {id:'q8',no:'8',type:'long',label:'การแจ้งเตือนอะไรที่คุณเคยปิด และปิดเพราะอะไร'},
+ {id:'q9',no:'9',type:'long',req:1,label:'มีอะไรเกี่ยวกับร่างกายของตัวเองที่คุณอยากรู้ แต่ตอนนี้ยังไม่รู้หรือไม่',help:'เขียนด้วยคำของคุณเองได้เลย ไม่มีตัวเลือก ยาวสั้นแค่ไหนก็ได้'},
+ {id:'q10',no:'10',type:'radio',req:1,label:'ภายใน 1 ปีที่ผ่านมา เคยหยุดออกกำลังกายเกิน 1 สัปดาห์เพราะบาดเจ็บหรือป่วยหรือไม่',opts:['ไม่เคย','หนึ่งครั้ง','สองครั้งขึ้นไป','ไม่ได้ออกกำลังกายอยู่แล้ว']},
+ {id:'q11',no:'11',type:'radio',req:1,label:'เคยซื้ออุปกรณ์สวมใส่แล้วเลิกใส่หรือไม่',opts:['ไม่เคยเลิกใส่','เคยซื้อแล้วเลิกใส่','ไม่เคยซื้อ']},
+ {id:'q11_1',no:'11.1',type:'long',label:'ถ้าเคยเลิกใส่ เพราะอะไร',showIf:function(a){return a.q11==='เคยซื้อแล้วเลิกใส่';}},
+ {id:'q12',no:'12',type:'radio',req:1,label:'สนใจทดลองใช้ต้นแบบอุปกรณ์สุขภาพแบบสวมใส่ฟรีหรือไม่',help:'ขั้นนี้เป็นการสำรวจความสนใจเท่านั้น ยังไม่ใช่การสมัครหรือผูกมัด',opts:['สนใจ','ไม่สนใจ']},
+ {id:'q12_1',no:'12.1',type:'text',req:1,label:'ชื่อและช่องทางติดต่อ (LINE ID หรือเบอร์โทร)',help:'ใช้ติดต่อกลับเรื่องการทดลองใช้เท่านั้น',showIf:function(a){return a.q12==='สนใจ';}},
+ {id:'q13',no:'13',type:'radio',req:1,label:'คุณดูแลพ่อแม่ ปู่ย่าตายาย หรือญาติผู้สูงอายุอยู่หรือไม่',opts:['ไม่ได้ดูแล','ดูแล อยู่บ้านเดียวกัน','ดูแล อยู่คนละบ้าน']},
+ {id:'q13_1',no:'13.1',type:'radio',req:1,label:'ผู้สูงอายุท่านนั้นอายุเท่าไร',opts:['ต่ำกว่า 60 ปี','60-69 ปี','70-79 ปี','80 ปีขึ้นไป']},
+ {id:'q13_1b',no:'13.2',type:'radio',req:1,label:'ท่านอยู่คนเดียวในช่วงกลางวันหรือไม่',opts:['ใช่','บางวัน','ไม่']},
+ {id:'q13_2',no:'13.3',type:'radio',req:1,label:'ภายใน 1 ปีที่ผ่านมา ท่านเคยล้มหรือไม่ และคุณรู้เมื่อไร',opts:['ไม่เคยล้ม','เคยล้ม และรู้เกือบทันที','เคยล้ม แต่รู้หลังผ่านไปหลายชั่วโมงหรือวันถัดมา','ไม่แน่ใจ']},
+ {id:'q13_3',no:'13.4',type:'group',req:1,label:'ภายใน 1 ปีที่ผ่านมา คุณจ่ายเพื่อความปลอดภัยของท่านเรื่องต่อไปนี้รวมกี่บาท',rows:MONEY13,help:'ใส่ 0 ถ้าไม่มี'},
+ {id:'q13_4',no:'13.5',type:'radio',req:1,label:'ท่านพกโทรศัพท์ติดตัวตลอดวันหรือไม่',opts:['พกตลอด','พกบางช่วง','แทบไม่พก','ไม่ใช้โทรศัพท์']},
+ {id:'q13_5',no:'13.6',type:'radio',req:1,label:'เคยซื้ออุปกรณ์สุขภาพหรือปุ่มฉุกเฉินให้ท่าน แล้วท่านไม่ยอมใส่หรือเลิกใส่หรือไม่',opts:['ไม่เคยซื้อ','ซื้อแล้ว และท่านใส่อยู่','ซื้อแล้ว แต่ท่านไม่ใส่']},
+ {id:'q13_6',no:'13.7',type:'long',label:'ถ้าท่านไม่ใส่ เพราะอะไร',showIf:function(a){return a.q13_5==='ซื้อแล้ว แต่ท่านไม่ใส่';}},
+ {id:'q14',no:'14',type:'radio',req:1,label:'งานของคุณต้องอยู่ในพื้นที่ที่มีความเสี่ยงต่อสุขภาพหรือความปลอดภัยหรือไม่ เช่น ก๊าซรั่ว ความร้อน ความเย็นจัด เสียงดัง สารเคมี หรือพื้นที่อับอากาศ',opts:['ไม่ งานของฉันไม่มีความเสี่ยงแบบนี้','ใช่ เป็นประจำ','ใช่ บางครั้ง']},
+ {id:'q14_1',no:'14.1',type:'radio',req:1,label:'งานของคุณอยู่ในกลุ่มไหนมากที่สุด',opts:['โรงงานหรือคลังสินค้า','ก่อสร้าง','ปิโตรเลียม เคมี หรือพลังงาน','เหมืองหรือขุดเจาะ','ห้องเย็นหรือครัวอุตสาหกรรม','ดับเพลิงหรือกู้ภัย','ซ่อมบำรุงหรือลานจอดอากาศยาน','เกษตรหรืองานกลางแจ้ง'],other:'อื่น ๆ (ระบุ)'},
+ {id:'q14_2',no:'14.2',type:'check',req:1,label:'ความเสี่ยงที่คุณเจอในงานมีอะไรบ้าง (เลือกได้หลายข้อ)',opts:['ก๊าซรั่วหรือก๊าซพิษ','ความร้อนหรือแดดจัด','ความเย็นจัด','เสียงดัง','ฝุ่นหรือสารเคมี','ทำงานคนเดียวหรืออยู่ไกลจากคนอื่น','ทำงานบนที่สูง'],other:'อื่น ๆ (ระบุ)'},
+ {id:'q14_3',no:'14.3',type:'check',req:1,label:'ตอนนี้คุณใช้อะไรตรวจจับหรือป้องกันความเสี่ยงเหล่านี้ (เลือกได้หลายข้อ)',opts:['เครื่องตรวจจับก๊าซแบบพกพา','อุปกรณ์วัดความร้อนหรืออุณหภูมิ','อุปกรณ์สวมใส่ที่แจ้งเตือนฉุกเฉินหรือการล้ม','ชุดป้องกัน (PPE) อย่างเดียว','ไม่มีเครื่องตรวจจับ ใช้ประสบการณ์เป็นหลัก'],other:'อื่น ๆ (ระบุ)'},
+ {id:'q14_4',no:'14.4',type:'radio',req:1,label:'ภายใน 1 ปีที่ผ่านมา คุณเคยเจอเหตุหรือเกือบเกิดเหตุจากความเสี่ยงเหล่านี้หรือไม่',opts:['ไม่เคย','เกือบเกิดเหตุ (ยังไม่มีใครเจ็บ)','เกิดเหตุ ทำให้บาดเจ็บหรือป่วยจากงาน','ไม่แน่ใจ']},
+ {id:'q14_5',no:'14.5',type:'radio',req:1,label:'อุปกรณ์ความปลอดภัยที่ใช้อยู่ ใครเป็นคนจ่าย',opts:['บริษัทจัดให้ทั้งหมด','บริษัทจัดให้บางส่วน และฉันซื้อเพิ่มเอง','ฉันซื้อเองทั้งหมด','ไม่มีอุปกรณ์']},
+ {id:'q14_6',no:'14.6',type:'money',req:1,label:'ภายใน 1 ปีที่ผ่านมา คุณซื้ออุปกรณ์ความปลอดภัยในการทำงานเองกี่บาท',help:'ใส่ 0 ถ้าไม่ได้ซื้อเอง'},
+ {id:'q14_7',no:'14.7',type:'radio',req:1,label:'ใครเป็นคนตัดสินใจซื้ออุปกรณ์ความปลอดภัยในที่ทำงานของคุณ',opts:['ฉันเอง','หัวหน้างานหรือฝ่ายความปลอดภัย','ฝ่ายจัดซื้อหรือผู้บริหาร','ไม่ทราบ']},
+ {id:'q14_8',no:'14.8',type:'long',label:'อุปกรณ์ที่ใช้อยู่ตอนนี้ มีอะไรที่ไม่สะดวกหรือทำให้ไม่อยากใส่'},
+ {id:'q15_1',no:'15.1',type:'age',req:1,label:'อายุ (ปี)'},
+ {id:'q15_2',no:'15.2',type:'radio',req:1,label:'ลักษณะงาน',opts:['งานออฟฟิศ','งานภาคสนามหรือกลางแจ้ง','ธุรกิจส่วนตัว','ฟรีแลนซ์','นักเรียนหรือนักศึกษา'],other:'อื่น ๆ (ระบุ)'},
+ {id:'q15_3',no:'15.3',type:'text',req:1,label:'พื้นที่ที่อาศัย (จังหวัด หรือเขต)'},
+ {id:'q16',no:'16',type:'radio',req:1,label:'คุณเห็นแบบสอบถามนี้จากที่ไหน',opts:['Facebook','Instagram','LINE','กลุ่มหรือชมรมวิ่งและออกกำลังกาย','กลุ่มหรือร้านนาฬิกา','ถูกชวนที่หน้างาน (สวนสาธารณะหรืออีเวนต์)','เพื่อนส่งต่อให้'],other:'อื่น ๆ (ระบุ)'}
+];
+var QBY={}; Q.forEach(function(q){QBY[q.id]=q;});
+var ELDER=['q13_1','q13_1b','q13_2','q13_3','q13_4','q13_5','q13_6'];
+var WORKER=['q14_1','q14_2','q14_3','q14_4','q14_5','q14_6','q14_7','q14_8'];
+var PAGES=[
+ {title:'ออกกำลังกายและอุปกรณ์ที่ใส่อยู่',why:'ถามเพื่อดูว่าคุณออกกำลังกายและใส่อะไรที่ข้อมืออยู่แล้วบ้าง จะได้เข้าใจชีวิตประจำวันของคุณก่อน และเทียบคนหลายแบบได้ แม้คุณไม่ออกกำลังกายเลย คำตอบก็มีประโยชน์เท่ากัน',ids:['q1','q2','q3','q4']},
+ {title:'ค่าใช้จ่ายด้านสุขภาพ',why:'เราอยากรู้ว่าคนจริง ๆ ลงเงินกับเรื่องสุขภาพแค่ไหน โดยดูจากที่จ่ายไปแล้วจริง ไม่ใช่ที่คิดว่าจะจ่าย ไม่ได้ประเมินฐานะของคุณ ใส่ 0 ได้ทุกช่อง ข้อ 6 ช่วยให้เราไม่ออกแบบบริการที่คนไม่อยากจ่าย',note:'ตอบเป็นจำนวนเงินที่จ่ายจริงรวมทั้งปี หน่วยบาท',ids:['q5','q6','q6_1']},
+ {title:'การแจ้งเตือนและเรื่องที่อยากรู้',why:'ถามเพื่อดูว่าอะไรทำให้คนเลิกใส่อุปกรณ์ เช่น การแจ้งเตือนที่รบกวน และมีเรื่องไหนเกี่ยวกับร่างกายที่คุณอยากรู้แต่ยังไม่มีทางรู้ ข้อ 9 สำคัญที่สุดของแบบสอบถามนี้ เขียนว่า "ไม่มี" ก็ได้',ids:['q7','q8','q9','q10','q11','q11_1','q12','q12_1']},
+ {title:'ผู้ที่คุณดูแลและความเสี่ยงในงาน',why:'สองข้อนี้ถามเพื่อแยกว่าจะให้ตอบส่วนไหนต่อ ผู้สูงอายุและงานเสี่ยงเป็นสองสถานการณ์ที่เรากำลังศึกษา เพราะหลายคนต้องห่วงพ่อแม่ และบางอาชีพต้องเสี่ยงอยู่ทุกวัน แต่ไม่ใช่ทุกคน ถ้าไม่เกี่ยวกับคุณ เลือก "ไม่" แล้วข้ามได้ทันที',ids:['q13','q14']},
+ {title:'ผู้สูงอายุที่คุณดูแล',why:'ถามเพื่อเข้าใจว่าครอบครัวที่มีผู้สูงอายุดูแลความปลอดภัยของท่านอย่างไรอยู่ และอะไรทำให้ท่านไม่ยอมใส่อุปกรณ์ จะได้ไม่ทำของที่ซื้อไปแล้วไม่ถูกใช้ ไม่ได้ประเมินว่าคุณดูแลท่านดีหรือไม่',note:'ถ้าดูแลหลายคน ให้ตอบถึงคนที่คุณกังวลมากที่สุด',ids:ELDER,showIf:function(a){return !!a.q13&&a.q13!=='ไม่ได้ดูแล';}},
+ {title:'งานที่มีความเสี่ยง',why:'งานบางประเภทมีความเสี่ยงที่เซนเซอร์ตรวจจับได้ เช่น ก๊าซและความร้อน เราอยากรู้ว่าตอนนี้คุณป้องกันตัวเองอย่างไร และอะไรยังไม่สะดวก เราไม่ถามชื่อบริษัทของคุณ',ids:WORKER,showIf:function(a){return !!a.q14&&a.q14.indexOf('ใช่')===0;}},
+ {title:'เกี่ยวกับคุณ',why:'ถามเพื่อจัดกลุ่มคำตอบ เช่น เทียบคนทำงานออฟฟิศกับงานภาคสนาม ข้อ 16 บอกเราว่าแบบสอบถามนี้ไปถึงคุณทางไหน เพื่อให้เราไม่ได้ข้อมูลจากวงเพื่อนอย่างเดียว',ids:['q15_1','q15_2','q15_3','q16']}
+];
+function pagesNow(){return PAGES.filter(function(p){return !p.showIf||p.showIf(answers);});}
+function qVisible(q){return !q.showIf||q.showIf(answers);}
+
+/* ---------- วาดคำถาม ---------- */
+function drawQ(q){
+  var box=h('div',{class:'q','data-id':q.id,role:'group','aria-labelledby':'l_'+q.id});
+  box.append(h('div',{class:'ql',id:'l_'+q.id},h('span',{class:'no'},q.no),h('span',null,q.label),q.req?null:h('span',{class:'opt'},'ไม่บังคับ')));
+  if(q.help&&q.type!=='radio'||q.help&&q.type==='radio')box.append(h('p',{class:'help'},q.help));
+  var body;
+  if(q.type==='radio'||q.type==='check') body=drawChoice(q);
+  else if(q.type==='money'||q.type==='age') body=drawNumber(q);
+  else if(q.type==='group') body=drawGroup(q);
+  else body=drawText(q);
+  box.append(body, h('p',{class:'err',role:'alert',hidden:true}));
+  return box;
+}
+function drawChoice(q){
+  var multi=q.type==='check', st=quiz[q.id]||(quiz[q.id]={set:{},other:''});
+  var prefix=q.otherPrefix||'อื่น ๆ: ';
+  var wrap=h('div',{class:'opts'});
+  function commit(){
+    var picks=Object.keys(st.set).filter(function(k){return st.set[k];});
+    var vals=[]; pending.delete(q.id);
+    picks.forEach(function(k){
+      if(k===OTHER){var t=st.other.trim(); if(t)vals.push(prefix+t); else pending.add(q.id);}
+      else vals.push(k);
+    });
+    if(multi){ if(vals.length)answers[q.id]=vals; else delete answers[q.id]; }
+    else { if(vals.length)answers[q.id]=vals[0]; else delete answers[q.id]; }
+    refreshVisibility();
+  }
+  function one(val,label,isOther){
+    var inp=h('input',{type:multi?'checkbox':'radio',name:q.id,value:val});
+    inp.checked=!!st.set[val];
+    var oth=null;
+    if(isOther){
+      oth=h('input',{type:'text',class:'oth','aria-label':label,placeholder:label,value:st.other});
+      oth.addEventListener('input',function(){st.other=oth.value; if(!inp.checked){inp.checked=true; onPick();} commit();});
+    }
+    function onPick(){
+      if(!multi) st.set={};
+      st.set[val]=inp.checked; commit();
+    }
+    inp.addEventListener('change',onPick);
+    var lab=h('label',{class:'o'},inp,isOther?oth:h('span',null,label));
+    return lab;
+  }
+  q.opts.forEach(function(o){wrap.append(one(o,o,false));});
+  if(q.other)wrap.append(one(OTHER,q.other,true));
+  return wrap;
+}
+function numVal(s){s=String(s).replace(/[,\s]/g,''); return /^\d+$/.test(s)?Number(s):null;}
+function drawNumber(q){
+  var inp=h('input',{type:'text',inputmode:'numeric',class:'f',id:'i_'+q.id,'aria-labelledby':'l_'+q.id,autocomplete:'off',value:answers[q.id]!=null?answers[q.id]:''});
+  inp.addEventListener('input',function(){var n=numVal(inp.value); if(n==null)delete answers[q.id]; else answers[q.id]=n;});
+  return h('div',{class:'fld'}, q.type==='money'?h('div',{class:'money'},inp,h('b',null,'บาท')):inp);
+}
+function drawGroup(q){
+  var cur=answers[q.id]||{};
+  var wrap=h('div',{class:'rows'});
+  q.rows.forEach(function(r){
+    var id='i_'+q.id+'_'+r[0];
+    var inp=h('input',{type:'text',inputmode:'numeric',class:'f',id:id,autocomplete:'off',value:cur[r[0]]!=null?cur[r[0]]:''});
+    inp.addEventListener('input',function(){
+      var g=answers[q.id]||(answers[q.id]={}); var n=numVal(inp.value);
+      if(n==null)delete g[r[0]]; else g[r[0]]=n;
+    });
+    wrap.append(h('div',{class:'row'},h('label',{for:id},r[1]),h('div',{class:'money'},inp,h('b',null,'บาท'))));
+  });
+  return wrap;
+}
+function drawText(q){
+  var long=q.type==='long';
+  var inp=h(long?'textarea':'input',{class:'f',id:'i_'+q.id,'aria-labelledby':'l_'+q.id});
+  if(!long)inp.type='text';
+  inp.value=answers[q.id]||'';
+  inp.addEventListener('input',function(){var v=inp.value.trim(); if(v)answers[q.id]=inp.value; else delete answers[q.id];});
+  return h('div',{class:'fld'},inp);
+}
+function refreshVisibility(){
+  document.querySelectorAll('#main .q').forEach(function(el){
+    var q=QBY[el.getAttribute('data-id')]; el.hidden=!qVisible(q);
+  });
+}
+
+/* ---------- ตรวจคำตอบ ---------- */
+function problem(q){
+  var v=answers[q.id];
+  if(q.type==='radio'||q.type==='check'){
+    if(pending.has(q.id))return 'พิมพ์รายละเอียดในช่อง "อื่น ๆ" หรือเลือกข้ออื่น';
+    if(q.req&&(v==null||v.length===0))return 'กรุณาเลือกคำตอบ';
+  }else if(q.type==='money'){
+    if(v==null)return 'กรอกเป็นตัวเลขบาท ใส่ 0 ถ้าไม่มี';
+  }else if(q.type==='age'){
+    if(v==null||v<10||v>100)return 'กรอกอายุเป็นตัวเลข';
+  }else if(q.type==='group'){
+    var g=v||{}; for(var i=0;i<q.rows.length;i++){ if(g[q.rows[i][0]]==null)return 'กรอกให้ครบทุกแถว ใส่ 0 ถ้าไม่มี'; }
+  }else{
+    if(q.req&&!(v&&String(v).trim()))return 'กรุณากรอกคำตอบ';
+  }
+  return null;
+}
+function validatePage(){
+  var first=null;
+  PAGES_SHOWN[pageIdx].ids.forEach(function(id){
+    var q=QBY[id], el=document.querySelector('#main .q[data-id="'+id+'"]'); if(!el)return;
+    var msg=qVisible(q)?problem(q):null, e=el.querySelector('.err');
+    el.classList.toggle('bad',!!msg); e.hidden=!msg; e.textContent=msg||'';
+    if(msg&&!first)first=el;
+  });
+  if(first){first.scrollIntoView({block:'center',behavior:'smooth'});}
+  return !first;
+}
+
+/* ---------- หน้าและปุ่ม ---------- */
+var PAGES_SHOWN=pagesNow();
+function show(){
+  PAGES_SHOWN=pagesNow();
+  if(pageIdx>=PAGES_SHOWN.length)pageIdx=PAGES_SHOWN.length-1;
+  var p=PAGES_SHOWN[pageIdx], last=pageIdx===PAGES_SHOWN.length-1;
+  var main=document.getElementById('main'); main.replaceChildren();
+  var card=h('section',{class:'card'},h('h2',null,p.title));
+  if(p.why)card.append(h('div',{class:'why'},h('b',null,'ทำไมถึงถามส่วนนี้'),h('p',null,p.why)));
+  if(p.note)card.append(h('p',{class:'note'},p.note));
+  p.ids.forEach(function(id){card.append(drawQ(QBY[id]));});
+  main.append(card);
+  var back=h('button',{class:'btn sec',type:'button',onclick:function(){PAGES_SHOWN=pagesNow(); if(pageIdx>0){pageIdx--; show(); window.scrollTo({top:0});}}},'ย้อนกลับ');
+  if(pageIdx===0)back.style.visibility='hidden';
+  var next=h('button',{class:'btn pri',type:'button',id:'next',onclick:function(){go(last);}},last?'ส่งแบบสอบถาม':'ถัดไป');
+  main.append(h('div',{class:'nav',style:'margin-top:20px'},back,next));
+  refreshVisibility();
+  document.getElementById('plbl').textContent='ส่วน '+(pageIdx+1)+' จาก '+PAGES_SHOWN.length;
+  document.getElementById('pfill').style.width=((pageIdx+1)/PAGES_SHOWN.length*100)+'%';
+}
+function go(last){
+  if(!validatePage())return;
+  if(!last){pageIdx++; show(); window.scrollTo({top:0}); return;}
+  submit();
+}
+
+/* ---------- ส่งคำตอบ ---------- */
+function clean(){
+  var out={};
+  pagesNow().forEach(function(p){p.ids.forEach(function(id){
+    var q=QBY[id]; if(qVisible(q)&&answers[id]!=null)out[id]=answers[id];
+  });});
+  return out;
+}
+function flatten(rec){
+  var o={submitted_at:rec.at,form_version:rec.v,src:SRC};
+  Q.forEach(function(q){
+    var v=rec.answers[q.id];
+    if(q.type==='group'){q.rows.forEach(function(r){o[q.id+'_'+r[0]]=v&&v[r[0]]!=null?v[r[0]]:'';});}
+    else o[q.id]=v==null?'':(Array.isArray(v)?v.join(' | '):v);
+  });
+  return o;
+}
+async function submit(){
+  var btn=document.getElementById('next'); btn.disabled=true; btn.textContent='กำลังส่ง';
+  var rec={v:FORM_VERSION,at:new Date().toISOString(),answers:clean()};
+  var saved=false;
+  try{
+    if(/^https:\/\//.test(ENDPOINT)){
+      await fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(flatten(rec))});
+      saved=true;
+    }else if(dbNs){await dbNs.collection('responses').add(rec); saved=true;}
+  }catch(e){ saved=false; }
+  finish(saved,rec);
+}
+function readable(rec){
+  var L=['LOFA form '+rec.v+' '+rec.at];
+  Q.forEach(function(q){
+    var v=rec.answers[q.id]; if(v==null)return;
+    if(q.type==='group'){L.push(q.no+' '+q.rows.map(function(r){return r[0]+'='+(v[r[0]]!=null?v[r[0]]:'');}).join(', '));}
+    else L.push(q.no+' '+(Array.isArray(v)?v.join(' | '):v));
+  });
+  return L.join('\n');
+}
+function finish(saved,rec){
+  document.getElementById('prog').hidden=true;
+  var main=document.getElementById('main'); main.replaceChildren();
+  var card=h('section',{class:'card done'});
+  if(saved){
+    card.append(h('h2',null,'ขอบคุณที่ตอบแบบสอบถาม'),h('p',{class:'ok'},'บันทึกคำตอบของคุณเรียบร้อยแล้ว'));
+    if(rec.answers.q12==='สนใจ')card.append(h('p',null,'คุณเลือกสนใจทดลองใช้ต้นแบบ เมื่อมีรอบทดลองใช้ ทีมงานจะติดต่อกลับทางช่องทางที่คุณให้ไว้ การติดต่อกลับยังไม่ใช่การผูกมัด และจำนวนผู้ทดลองมีจำกัด จึงอาจไม่ได้ติดต่อครบทุกคน ถ้าไม่ต้องการให้ติดต่อ ตอบกลับช่องทางที่ส่งแบบสอบถามนี้ให้คุณได้เลย'));
+    card.append(h('p',{class:'note'},'ปิดหน้านี้ได้เลย'));
+  }else{
+    var txt=readable(rec);
+    var status=h('span',null,'');
+    card.append(h('h2',null,'ยังบันทึกอัตโนมัติไม่ได้'),
+      h('p',null,'อุปกรณ์นี้ส่งคำตอบเข้าระบบโดยตรงไม่ได้ กรุณาคัดลอกข้อความด้านล่าง แล้วส่งให้ผู้จัดทำทาง LINE เพื่อให้คำตอบของคุณถูกนับ'),
+      h('div',{class:'mono',id:'fallback'},txt),
+      h('div',{class:'nav'},h('button',{class:'btn pri',type:'button',onclick:function(){copyText(txt,status);}},'คัดลอกคำตอบ'),status));
+  }
+  main.append(card); window.scrollTo({top:0});
+}
+function copyText(t,status){
+  function sel(){var r=document.createRange(); r.selectNodeContents(document.getElementById('fallback')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); status.textContent='เลือกข้อความแล้ว กดคัดลอกเอง';}
+  try{ navigator.clipboard.writeText(t).then(function(){status.textContent='คัดลอกแล้ว';},sel); }catch(e){ sel(); }
+}
+
+/* ---------- เริ่มทำงาน ---------- */
+show();
+(async function(){
+  try{
+    if(!window.claude||!window.claude.use)return;
+    dbNs=await window.claude.use('db');
+  }catch(e){}
+})();
+})();
+</script>
+
+</body></html>
